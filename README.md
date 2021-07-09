@@ -27,7 +27,7 @@ where <code>your_username</code> and <code>your_worker_IP</code> should be repla
 
 <li> For each remote HPC worker, log in to <code>your_worker_IP</code> and edit the <code>~/.ssh/authorized_keys</code> file. The last line of this file should contain the ssh key entry you have just added with the ssh-copy-id command above. We are now going to edit this line to prevent any misuse of this automated login channel. This is done by limiting the usage to this key enabling only a privately own command filter. To this end, edit the line pertaining the ssh key we just authorized (i.e., the last line of <code>~/.ssh/authorized_keys</code> ), and pre-pend (i.e., add in front of any text of that line) the following string:
 <pre>
-from="your_IP",command="your_path_to/ML-RuCat/tools/subtoremote/commandFilter.sh" 
+from="your_IP",command="your_path_to/RemoteWorkersBridge/commandFilter.sh" 
 </pre>
 where <code>your_IP</code> is the IP address of your local client (the machine what will use this connection to submit jobs to the worker) and <code>your_path_to</code> is the path to the clone of this repository on the HPC worker.</li>
 
