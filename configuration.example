@@ -3,10 +3,10 @@ remoteIP=000.000.00.000
 wdirOnRemote=/write/here/the/absolute/path/on/remote
 userOnRemote=your_user_name
 identityFile=ssh_identity_file
-workKind=xtb,dft,txtb
+workKind=xtb,txtb
 [WORKER2]
 remoteIP=000.000.00.000
 wdirOnRemote=/write/here/the/absolute/path/on/remote
 userOnRemote=your_user_name
 identityFile=ssh_identity_file
-workKind=dft
+workKind=dft,tdft
