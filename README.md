@@ -1,8 +1,8 @@
 # Submit Jobs To Remote Workers
-This is a simple interface that creates a bridge between a local client and one or more remore clients (i.e., the "workers"), and uses such bridge to send computational tasks (i.e., jobs) to those remote clients, a.k.a. workers. The workers are typically high-performance cumputing (HPC) clusters where jobs can be submitted to a scheduler or a queuing system. 
+This is a simple interface that creates a bridge between a local client and one or more remote clients (i.e., the "workers"), and uses such bridge to send computational tasks (i.e., jobs) to those remote clients, a.k.a. workers. The workers are typically high-performance computing (HPC) clusters where jobs can be submitted to a scheduler or a queuing system. 
 
-The nature of the scheduler/queue is not influencing the present repository because the purpose of this repository is to collect tools and documentation that allows to configure a secure connection, trasfer files from/to a local client to/from the remote worker, send jobs to the remote worker, wait for completion of the job, and retrieve the results.
-Still, we here ***assume the existence of commands to submit jobs to the queue*** (see submission commands in the **runners** scripts you find undder the [runners](runners) folder). Custom job submission commands can be easily integrated by adding the corresponding script in the [runners](runners) folder, and by adding another case of permitted command in the [commandFilter.sh](commandFilter.sh). 
+The nature of the scheduler/queue is not influencing the present repository because the purpose of this repository is to collect tools and documentation that allows to configure a secure connection, transfer files from/to a local client to/from the remote worker, send jobs to the remote worker, wait for completion of the job, and retrieve the results.
+Still, we here ***assume the existence of commands to submit jobs to the queue*** (see submission commands in the **runners** scripts you find under the [runners](runners) folder). Custom job submission commands can be easily integrated by adding the corresponding script in the [runners](runners) folder, and by adding another case of permitted command in the [commandFilter.sh](commandFilter.sh). 
 
 ## How to setup a "sub-to-remote bridge"
 1. Clone/copy the repository to your local client.
@@ -21,13 +21,13 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     eval `ssh-agent -s`
     ssh-add ~/.ssh/id_rsa_HPCWorkers
     ```
-    and give the passphrase you have chosen in the previous step. The ssh-agent is session-specific, meaning that it survives as long as your session is active (this, uless you kill it, or is killed by some sort of problem). Therefore, the `ssh-add` command has to be repeated for every new session on your local client. For example, when after reboot or log-out/log-in.
+    and give the passphrase you have chosen in the previous step. The ssh-agent is session-specific, meaning that it survives as long as your session is active (this, unless you kill it, or is killed by some sort of problem). Therefore, the `ssh-add` command has to be repeated for every new session on your local client. For example, when after reboot or log-out/log-in.
 
 5. Copy the identity/key to each remote HPC worker with this command:
     ```
     ssh-copy-id -i ~/.ssh/id_rsa_HPCWorkers your_username@your_worker_IP
     ```
-    where `your_username` and `your_worker_IP` should be replaced with your specific username and IP address.
+    where `your_username` and `your_worker_IP` should be replaced with your specific user-name and IP address.
 
 6. For each remote HPC worker, log in to `your_worker_IP` and edit the `~/.ssh/authorized_keys` file. The last line of this file should contain the ssh key entry you have just added with the ssh-copy-id command above. We are now going to edit this line to prevent any misuse of this automated login channel. This is done by limiting the usage to this key enabling only a privately own command filter. To this end, edit the line pertaining the ssh key we just authorized (i.e., the last line of `~/.ssh/authorized_keys`), and pre-pend (i.e., add in front of any text of that line) the following string (NB: there is a space at the end!):
     ```
@@ -42,16 +42,16 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     * `wdirOnRemote` a pathname defining the work directory on the HPC worker. Your remote client will send any files defining a job (e.g., input files) on this location of the HPC worker, and from there the HPC worker will take any such files for any further processing, e.g., for submit a job defined by those input files.
     * `userOnRemote` your used name on the HPC worker. This is used to send files and requests to the HPC worker via `scp`.
     * `identityFile` the pathname to the file containing the private part of the ssh key you have created in the above procedure (NB: this pathname is the one that **does NOT end with ~~.pub~~**).
-    * `workKind` defined what kind of work a spceific worker is able to do. This allows to register multiple HPC workers and use each of them for specific tasks that are best asuited for their architecture.
+    * `workKind` defined what kind of work a specific worker is able to do. This allows to register multiple HPC workers and use each of them for specific tasks that are best suited for their architecture.
 
 8. Copy the `configuration` file from your local client to each of the HPC workers. It must be place beside the [configuration.example](configuration.example) file present in the copy of this repository on each HPC worker (the repositories you have clone in step 2.).
 
-9. Done! You should now be ready to use the bridge to the remote HPC workers. This is how to quicky run a test:
+9. Done! You should now be ready to use the bridge to the remote HPC workers. This is how to quickly run a test:
     ```
     cd submit_tool/test/
     ./runTest.sh
     ```
-    After some seconds the result should be a conforting message saying that the test was successfully passed. Now you are ready to use the bridge to send calculations to the remote worker.
+    After some seconds the result should be a comforting message saying that the test was successfully passed. Now you are ready to use the bridge to send calculations to the remote worker.
 
 
 # Troubleshoot
