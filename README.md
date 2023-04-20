@@ -44,7 +44,9 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     * `identityFile` the pathname to the file containing the private part of the ssh key you have created in the above procedure (NB: this pathname is the one that **does NOT end with ~~.pub~~**).
     * `workKind` defined what kind of work a spceific worker is able to do. This allows to register multiple HPC workers and use each of them for specific tasks that are best asuited for their architecture.
 
-8. Done! You should now be ready to use the bridge to the remote HPC workers. This is how to quicky run a test:
+8. Copy the `configuration` file from your local client to each of the HPC workers. It must be place beside the [configuration.example](configuration.example) file present in the copy of this repository on each HPC worker (the repositories you have clone in step 2.).
+
+9. Done! You should now be ready to use the bridge to the remote HPC workers. This is how to quicky run a test:
     ```
     cd submit_tool/test/
     ./runTest.sh
