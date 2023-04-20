@@ -35,14 +35,16 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     ```
     where `your_IP` is the IP address of your local client (the machine what will use this connection to submit jobs to the worker) and `path_to_your_copy_of_this_repository_on_the_HPC_worker` is the path to the RemoteWorkersBridge folder on the HPC worker: the same you have used above.
 
-7. Specify the configurations constrolling the functionality of the bridge between the local client and the HPC workers. This is done by creating a `configuration` file. These details ***MUST*** be specified in a file named `configuration`. Your `configuration` file must be place beside the [configuration.example](configuration.example) file, i.e., in your local copies of this repository both on the local client and on the remote HPC worker (the repositories you have clone in steps 1. and 2.). The settings of the repository (i.e., the `.gitignore` file) are so that the `configuration` file is not tracked by git.
+7. Specify the configurations controlling the functionality of the bridge between the local client and the HPC workers. This is done by creating a `configuration` file. These details ***MUST*** be specified in a file named `configuration`. Your `configuration` file must be place beside the [configuration.example](configuration.example) file, i.e., in your local copies of this repository both on the local client and on the remote HPC worker (the repositories you have clone in steps 1. and 2.). The settings of the repository (i.e., the `.gitignore` file) are so that the `configuration` file is not tracked by git.
     An example of such file is available in [configuration.example](configuration.example). The configuration needed to use these scripts includes:
 
-    * identity of the workers (plus details of what a worker is capable of)</li>
-    * ssh identity definitions (i.e., usernames and pathname to private ssh keys)</li>
-    * pathnames defining where to place files related to jobs</li>
+    * `remoteIP` is the identity of the HPC worker in the network</li>
+    * `wdirOnRemote` a pathname defining the work directory on the HPC worker. Your remote client will send any files defining a job (e.g., input files) on this location of the HPC worker, and from there the HPC worker will take any such files for any further processing, e.g., for submit a job defined by those input files.
+    * `userOnRemote` your used name on the HPC worker. This is used to send files and requests to the HPC worker via `scp`.
+    * `identityFile` the pathname to the file containing the private part of the ssh key you have created in the above procedure (NB: this pathname is the one that **does NOT end with ~~.pub~~**).
+    * `workKind` defined what kind of work a spceific worker is able to do. This allows to register multiple HPC workers and use each of them for specific tasks that are best asuited for their architecture.
 
-8. At this point you should be ready to use the "subnit-to-remote" bridge. This is how to quicky run a test:
+8. Done! You should now be ready to use the bridge to the remote HPC workers. This is how to quicky run a test:
     ```
     cd submit_tool/test/
     ./runTest.sh
