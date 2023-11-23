@@ -23,7 +23,7 @@ fi
 #define variables
 jobid="${1}"
 jobname="job$jobid"
-myIP=$(curl ifconfig.me/ip)
+myIP=$(curl -s -4 ifconfig.me/ip)
 myDir="$(dirname "$0")"
 wDirParent="$("$myDir/../utils/parseConfiguration.sh" -f "$myDir/../configuration" -i "$myIP" -k dft -o w)"
 if [ -z "$wDirParent" ] || [ ! -d "$wDirParent" ]; then

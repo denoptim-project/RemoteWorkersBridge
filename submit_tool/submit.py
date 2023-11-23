@@ -105,14 +105,11 @@
 ###############################################################################
 
 
-import re
 import os
 import os.path as path
 import sys
-import datetime
 import time
 import subprocess
-import optparse
 from optparse import OptionParser
 import configparser
 
@@ -122,60 +119,69 @@ defWDir = '$HOME'
 defKey = 'noKey'
 
 # Read configuration file
-configFile = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','configuration')
+configFile = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'configuration')
 config = configparser.ConfigParser()
 if path.exists(configFile):
-	config.read(configFile)
-	defUser = config['WORKER1']['userOnRemote']
-	defRemoteIP = config['WORKER1']['remoteIP']
-	defWDir = config['WORKER1']['wdirOnRemote']
-	defKey = config['WORKER1']['identityFile']
+    config.read(configFile)
+    defUser = config['WORKER1']['userOnRemote']
+    defRemoteIP = config['WORKER1']['remoteIP']
+    defWDir = config['WORKER1']['wdirOnRemote']
+    defKey = config['WORKER1']['identityFile']
 else:
-	print('WARNING: No configuration file found at '+configFile)
-	print('You\'ll have to provide many command line arguments.')
+    print('WARNING: No configuration file found at '+configFile)
+    print('You\'ll have to provide many command line arguments.')
 
 # Parse command line arguments
 parser = OptionParser()
-parser.add_option("-u","--user",dest="user",help="username of your account on "
+parser.add_option("-u", "--user", dest="user",
+                  help="username of your account on "
                   + "the HPC [default: %default]. Please set SSH Keys to avoid"
-                  + " manual typing of passwords",default=defUser)
-parser.add_option("-m","--machine",dest="machine",help="hostname or IP of HPC. "
+                  + " manual typing of passwords", default=defUser)
+parser.add_option("-m", "--machine", dest="machine",
+                  help="hostname or IP of HPC. "
                   + "The IP is preferred if multiple login nodes are "
-				  + "available.",default=defRemoteIP)
-parser.add_option("-k","--key",dest="keyfile",help="private SSH key file "
-				  + "(i.e., identity file).")
-parser.add_option("-i","--input",dest="infiles",help="input file/s for task"
+                  + "available.", default=defRemoteIP)
+parser.add_option("-k", "--key", dest="keyfile",
+                  help="private SSH key file "
+                  + "(i.e., identity file).")
+parser.add_option("-i", "--input", dest="infiles",
+                  help="input file/s for task"
                   + " script. Use double quotes to "
                   + "list more than one file, i.e., -i \"file1 file2\". Note "
-				  + "that the name of the submitted job will not be related to "
-				  + "the name of the input in any way.")
-parser.add_option("-K","--jobKind",dest="jobKind",help="the kind of jobs: a string"
+                  + "that the name of the submitted job will not be related to "
+                  + "the name of the input in any way.")
+parser.add_option("-K", "--jobKind", dest="jobKind",
+                  help="the kind of jobs: a string"
                   + " used to redirect the execution of a specific kind "
                   + "of job submission script on the remote machine. "
                   + "The meaning of the string is defined by the"
                   + " command filter on the remote machine.")
-parser.add_option("-p","--hpcpath",dest="hpcpath",help="path to parent "
+parser.add_option("-p", "--hpcpath", dest="hpcpath",
+                  help="path to parent "
                   + "directory of working copy on HPC [default: %default]",
                   default=defWDir)
-parser.add_option("-d","--delay",dest="delay",help="integer number of time"
+parser.add_option("-d", "--delay", dest="delay",
+                  help="integer number of time"
                   + " units between successive evaluation of the status of the"
-                  + " running task [default: %default]",default=5)
-parser.add_option("-t","--timeunit",dest="units",help="time units for delay "
+                  + " running task [default: %default]", default=5)
+parser.add_option("-t", "--timeunit", dest="units",
+                  help="time units for delay "
                   + "(\'s\' for seconds ,\'m\' for minutes, and \'h\' for "
-                  + "hours) [default: %default]",default='s')
-parser.add_option("-x","--max",dest="maxwait",help="maximum number of attempt "
+                  + "hours) [default: %default]", default='s')
+parser.add_option("-x", "--max", dest="maxwait",
+                  help="maximum number of attempt "
                   + "to evaluate the status of the running task. If the task is"
                   + " not completed after maxwait*d(sec), the tasks will be "
                   + "abandoned and its outcome ignored [default: %default].",
-				  default=5)
+                  default=5)
 (options, args) = parser.parse_args()
 
 keyfile = defKey
 if options.keyfile:
-	keyfile = options.keyfile
+    keyfile = options.keyfile
 else:
-	if not path.exists(defKey):
-		parser.error('No private private key. Try --help for instructions or add ssh private key (\'identityFile\') to ../configuration file')
+    if not path.exists(defKey):
+        parser.error('No private private key. Try --help for instructions or add ssh private key (\'identityFile\') to ../configuration file')
 
 if not options.infiles:
     parser.error('No input; try --help for instructions')
@@ -196,7 +202,7 @@ if options.jobKind:
 
 ds = 0
 if u == 's':
-    ds = d 
+    ds = d
 elif u == 'm':
     ds = int(d)*60
 elif u == 'h':
@@ -220,10 +226,10 @@ print ('Current timestamp (ms): ', ts)
 
 # Make working space
 wdir = hpcpath + '/' + inname + ts
-ssh1 = subprocess.Popen(['ssh', '-i', keyfile, '%s@%s' % (user,host), 'mkdir ' + wdir],
-		shell=False,
-		stdout=subprocess.PIPE,
-		stderr=subprocess.PIPE)
+ssh1 = subprocess.Popen(['ssh', '-i', keyfile, '%s@%s' % (user, host), 'mkdir ' + wdir],
+        shell=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
 res = ssh1.wait()
 if res != 0:
     print ('ERROR! Unable to make working space ',wdir)
@@ -231,7 +237,7 @@ if res != 0:
     if output != []:
         print (output)
     error = ssh1.stderr.readlines()
-    if error != []: 
+    if error != []:
         print (error)
     sys.exit(1)
 
@@ -239,7 +245,7 @@ if res != 0:
 # Move files to working space
 print ('Moving files to remote...')
 for f in infiles:
-    scp1 = subprocess.Popen(['scp', '-i', keyfile, f , '%s@%s:%s' % (user,host,wdir)],
+    scp1 = subprocess.Popen(['scp', '-i', keyfile, f, '%s@%s:%s' % (user, host, wdir)],
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
@@ -302,7 +308,7 @@ print ('Collecting results...')
 if taskdone == 0:
     with open(loctcfile) as fout:
         for f in fout:
-            print ('Trying to recover ',f.rstrip()) 
+            print ('Trying to recover ',f.rstrip())
             scp3 = subprocess.Popen(['scp', '-T' ,'-i', keyfile, '%s@%s:%s/%s' % (user,host,wdir,f), '.'],
                    shell=False,
                    stdout=subprocess.PIPE,

@@ -27,13 +27,13 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     ```
     ssh-copy-id -i ~/.ssh/id_rsa_HPCWorkers your_username@your_worker_IP
     ```
-    where `your_username` and `your_worker_IP` should be replaced with your specific user-name and IP address.
+    where `your_username` and `your_worker_IP` should be replaced with your specific user-name and IP address. Presently we support only IPv4. You can get the proper IP by running `echo $(curl -s -4 ifconfig.me/ip)` from inside the remote.
 
 6. For each remote HPC worker, log in to `your_worker_IP` and edit the `~/.ssh/authorized_keys` file. The last line of this file should contain the ssh key entry you have just added with the ssh-copy-id command above. We are now going to edit this line to prevent any misuse of this automated login channel. This is done by limiting the usage to this key enabling only a privately own command filter. To this end, edit the line pertaining the ssh key we just authorized (i.e., the last line of `~/.ssh/authorized_keys`), and pre-pend (i.e., add in front of any text of that line) the following string (NB: there is a space at the end!):
     ```
     from="your_IP",command="path_to_your_copy_of_this_repository_on_the_HPC_worker/RemoteWorkersBridge/commandFilter.sh" 
     ```
-    where `your_IP` is the IP address of your local client (the machine what will use this connection to submit jobs to the worker) and `path_to_your_copy_of_this_repository_on_the_HPC_worker` is the path to the RemoteWorkersBridge folder on the HPC worker: the same you have used above.
+    where `your_IP` is the IP address of your local client (the machine what will use this connection to submit jobs to the worker. Presently we support only IPv4. You can get the proper IP by running `echo $(curl -s -4 ifconfig.me/ip)` frm within your local client) and `path_to_your_copy_of_this_repository_on_the_HPC_worker` is the path to the RemoteWorkersBridge folder on the HPC worker: the same you have used above.
 
 7. Specify the configurations controlling the functionality of the bridge between the local client and the HPC workers. This is done by creating a `configuration` file. These details ***MUST*** be specified in a file named `configuration`. Your `configuration` file must be place beside the [configuration.example](configuration.example) file, i.e., in your local copies of this repository both on the local client and on the remote HPC worker (the repositories you have clone in steps 1. and 2.). The settings of the repository (i.e., the `.gitignore` file) are so that the `configuration` file is not tracked by git.
     An example of such file is available in [configuration.example](configuration.example). The configuration needed to use these scripts includes:
