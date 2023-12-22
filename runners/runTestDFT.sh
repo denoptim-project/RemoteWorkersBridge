@@ -26,8 +26,12 @@ myIP=$(curl -s -4 ifconfig.me/ip)
 myDir="$(dirname "$0")"
 wDirParent="$("$myDir/../utils/parseConfiguration.sh" -f "$myDir/../configuration" -i "$myIP" -k tdft -o w)"
 if [ -z "$wDirParent" ] || [ ! -d "$wDirParent" ]; then
-    echo "ERROR! I could not get the work directory from the configuration file"
-    exit 1
+    echo "WARNING: Configuration for '$myIP' not found. Trying with 'localhost'"
+    wDirParent="$("$myDir/../utils/parseConfiguration.sh" -f "$myDir/../configuration" -i "localhost" -o w | head -n 1 )"
+    if [ -z "$wDirParent" ] || [ ! -d "$wDirParent" ]; then
+      echo "ERROR! I could not get the work directory from the configuration file"
+      exit 1
+    fi
 fi
 wdir="$wDirParent/$jobname"
 jobscript="$wdir/$jobname.job"

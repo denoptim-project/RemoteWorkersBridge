@@ -1,8 +1,8 @@
 # Submit Jobs To Remote Workers
-This is a simple interface that creates a bridge between a local client and one or more remote clients (i.e., the "workers"), and uses such bridge to send computational tasks (i.e., jobs) to those remote clients, a.k.a. workers. The workers are typically high-performance computing (HPC) clusters where jobs can be submitted to a scheduler or a queuing system. 
+This is a simple interface that creates a bridge between a local client and one or more remote clients (i.e., the "workers"), and uses such bridge to send computational tasks (i.e., jobs) to those remote clients, a.k.a. workers. The workers are typically high-performance computing (HPC) clusters where jobs can be submitted to a scheduler or a queuing system.
 
 The nature of the scheduler/queue is not influencing the present repository because the purpose of this repository is to collect tools and documentation that allows to configure a secure connection, transfer files from/to a local client to/from the remote worker, send jobs to the remote worker, wait for completion of the job, and retrieve the results.
-Still, we here ***assume the existence of commands to submit jobs to the queue*** (see submission commands in the **runners** scripts you find under the [runners](runners) folder). Custom job submission commands can be easily integrated by adding the corresponding script in the [runners](runners) folder, and by adding another case of permitted command in the [commandFilter.sh](commandFilter.sh). 
+Still, we here ***assume the existence of commands to submit jobs to the queue*** (see submission commands in the **runners** scripts you find under the [runners](runners) folder). Custom job submission commands can be easily integrated by adding the corresponding script in the [runners](runners) folder, and by adding another case of permitted command in the [commandFilter.sh](commandFilter.sh).
 
 ## How to setup a "sub-to-remote bridge"
 1. Clone/copy the repository to your local client.
@@ -12,7 +12,7 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     cd path_to_your_copy_of_this_repository_on_the_HPC_worker/RemoteWorkersBridge
     chmod 700 commandFilter.sh
     ```
-4. Create a ssh key pair for connecting safely to the remote HPC workers. 
+4. Create a ssh key pair for connecting safely to the remote HPC workers.
     ```
     ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_HPCWorkers
     ```
@@ -31,7 +31,7 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
 
 6. For each remote HPC worker, log in to `your_worker_IP` and edit the `~/.ssh/authorized_keys` file. The last line of this file should contain the ssh key entry you have just added with the ssh-copy-id command above. We are now going to edit this line to prevent any misuse of this automated login channel. This is done by limiting the usage to this key enabling only a privately own command filter. To this end, edit the line pertaining the ssh key we just authorized (i.e., the last line of `~/.ssh/authorized_keys`), and pre-pend (i.e., add in front of any text of that line) the following string (NB: there is a space at the end!):
     ```
-    from="your_IP",command="path_to_your_copy_of_this_repository_on_the_HPC_worker/RemoteWorkersBridge/commandFilter.sh" 
+    from="your_IP",command="path_to_your_copy_of_this_repository_on_the_HPC_worker/RemoteWorkersBridge/commandFilter.sh"
     ```
     where `your_IP` is the IP address of your local client (the machine what will use this connection to submit jobs to the worker. Presently we support only IPv4. You can get the proper IP by running `echo $(curl -s -4 ifconfig.me/ip)` frm within your local client) and `path_to_your_copy_of_this_repository_on_the_HPC_worker` is the path to the RemoteWorkersBridge folder on the HPC worker: the same you have used above.
 
@@ -53,8 +53,15 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     ```
     After some seconds the result should be a comforting message saying that the test was successfully passed. Now you are ready to use the bridge to send calculations to the remote worker.
 
+# Testing without remote workers
+If you do not want to use an actual remote worker for testing this code, you can use your local client (i.e., `localhost`) as a fake remote worker. See [submit_tool/test/runTest_on_localhost.sh](submit_tool/test/runTest_on_localhost.sh) or run the test by:
+```
+cd submit_tool/test
+./runTest_on_localhost.sh
+```
+__WARNING:__ This can work only if your localhost is configured to accept remote login. Standard laptops are usually not configured to accept remote login, so you need to change this configuration (and possibly Firewall's settings) to enable this. For example, MacOS you need to do _System Preferences_ -> _Sharing_ -> _Remote Login_ to select which user can login via ssh.
 
 # Troubleshoot
-* <b>Ensure usage of the right ssh key</b>. If you already have other ssh keys authorized for a worker, you must make sure that the right identity is used when connecting with the scripts from this repository. Try commenting out (removing authorization) the other lines in the worker's ~/.ssh/authorized_keys to verify you are indeed using the expected key. 
+* <b>Ensure usage of the right ssh key</b>. If you already have other ssh keys authorized for a worker, you must make sure that the right identity is used when connecting with the scripts from this repository. Try commenting out (removing authorization) the other lines in the worker's ~/.ssh/authorized_keys to verify you are indeed using the expected key.
 * <b>"Command not found" when submitting tasks</b> This is a problem easy to reproduce by running the `runTest.sh` under [submit_tool/test](submit_tool/test). It is usually the result of having multiple authorized keys from the local client to the worker, and not having a properly functioning key that calls via the `commandFilter.sh` script on the worker. In more detail, when you use a non-empty passphrase AND rely on ssh-agent to manage the passphrases AND you reboot your local client, you might forget to do `ssh-add` to enable password-less login using the proper identity file. This means the intended ssh key will not be authorized and other ssh keys will be tried. However, since these other authorized keys do not require execution of the `commandFilter.sh` script on the worker, the submission commands are not understood by the worker and you end up with the `command not found`.
 * When testing and debugging with `submit_tool/test/runTest.sh` make sure there are no other authentication keys between local and remote worker. Otherwise you may be performing ssh with a different authorized key from the one that is forced to run the command filter.

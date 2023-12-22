@@ -27,8 +27,12 @@ myIP=$(curl -s -4 ifconfig.me/ip)
 myDir="$(dirname "$0")"
 wDirParent="$("$myDir/../utils/parseConfiguration.sh" -f "$myDir/../configuration" -i "$myIP" -k dft -o w)"
 if [ -z "$wDirParent" ] || [ ! -d "$wDirParent" ]; then
-    echo "ERROR! I could not get the work directory from the configuration file"
-    exit 1
+    echo "WARNING: Configuration for '$myIP' not found. Trying with 'localhost'"
+    wDirParent="$("$myDir/../utils/parseConfiguration.sh" -f "$myDir/../configuration" -i "localhost" -o w | head -n 1 )"
+    if [ -z "$wDirParent" ] || [ ! -d "$wDirParent" ]; then
+      echo "ERROR! I could not get the work directory from the configuration file"
+      exit 1
+    fi
 fi
 wdir="$wDirParent/$jobname"
 jobscript="$wdir/$jobname.job"
@@ -78,7 +82,7 @@ inpSDFs=\$inpSDFs\$(grep -i jobdetailsfile *.jd | sed 's/JOBDETAILSFILE://' | so
 #
 # Submit Task
 #
-echo "$jobSubmissionCommand" -f "\$inpSDFs" -j "\$jdFile" --tcl "\$tclFile" --tclREGEX ".*last-DFT.sdf" -c "$cores" -t "$walltime" --jobname "\${molName}_DFT" --accargs "--StringFromCLI \$molName" --notify NONE
+echo "$jobSubmissionCommand" -f "\$inpSDFs" -j "\$jdFile" --tcl "\$tclFile" --tclREGEX ".*last-DFT.sdf" -c "$cores" -t "$walltime" --jobname "\${molName}_DFT" --accargs "--StringFromCLI \$molName" --notify NONE >> "\$logFile"
 "$jobSubmissionCommand" -f "\$inpSDFs" -j "\$jdFile" --tcl "\$tclFile" --tclREGEX ".*last-DFT.sdf" -c "$cores" -t "$walltime" --jobname "\${molName}_DFT" --accargs "--StringFromCLI \$molName" --notify NONE >> "\$logFile" 2>&1
 
 exit 0
