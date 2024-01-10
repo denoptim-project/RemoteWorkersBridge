@@ -36,7 +36,7 @@ if [ -z "$wDirParent" ] || [ ! -d "$wDirParent" ]; then
 fi
 wdir="$wDirParent/$jobname"
 jobscript="$wdir/$jobname.job"
-jobSubmissionCommand="submit_job_acc-2"
+jobSubmissionCommand="submit_job_acc"
 #parameters for actual runs
 nodes="1"
 cores="20"
