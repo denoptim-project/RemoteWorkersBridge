@@ -4,6 +4,9 @@
 # If no configuration file is found, it stops.
 #
 
+testDir="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+cd "$testDir"
+
 if [ -f ../../configuration ]
 then
     python ../submit.py -i "fileIn.sdf fileIn.jd" -d 1 -x 10 -t s -K t 
