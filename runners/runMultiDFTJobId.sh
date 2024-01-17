@@ -77,7 +77,7 @@ jdFile="\$(ls *.jd)"
 # Collect all possibly needed input files
 #
 inpSDFs=\$(ls *DFT.sdf | grep -v / | tr '\n' ',')
-inpSDFs=\$inpSDFs\$(grep -i jobdetailsfile *.jd | sed 's/JOBDETAILSFILE://' | sort -u | grep -v / | tr '\n' ',')
+inpSDFs=\$inpSDFs\$(grep -i jobdetailsfile *.jd | sed 's/JOBDETAILSFILE: *//' | sort -u | grep -v / | tr '\n' ',')
 
 #
 # Submit Task
