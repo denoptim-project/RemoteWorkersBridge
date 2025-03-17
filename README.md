@@ -6,8 +6,8 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
 
 # Strategies for setting up a bridge to remote workers
 We here support two strategies for configuring the connection:
-a. [Strategy based on configuring SSH key](#via_SSH_key_and_identity_file) and using the identify file to perform operations via SSH.
-b. [Strategy based on creating a single main background connection (posibly with 2FA)](#via_main_background_connection) that is then used by all further connections to the remote.
+*  [Strategy based on configuring SSH key](#via-ssh-key-and-identity-file) and using the identify file to perform operations via SSH.
+*  [Strategy based on creating a single main background connection (posibly with 2FA)](#via-main-background-connection) that is then used by all further connections to the remote.
 
 ## Via SSH key and identity file
 1. Clone/copy the repository to your local client.
