@@ -57,16 +57,22 @@ if [[ $SSH_ORIGINAL_COMMAND == *";"* ]] || \
   exit 129
 fi
 
-# Analyze the single command, and decide if it is allowed or not
-command=$(echo $SSH_ORIGINAL_COMMAND | cut -d' ' -f 1)
-arg=$(echo $SSH_ORIGINAL_COMMAND | cut -d' ' -f 2)
-
-# Intercept attempts to call this script from ssh command
-if [[ "$SSH_ORIGINAL_COMMAND" =~ "^$0 .*" ]] ; then
-  echo "$ts authorized ssh-triggering of commanf filter: $SSH_ORIGINAL_COMMAND" >> $log
-  command="$arg"
+# Define what is the command to process. This depends on whether we are processing
+# and SSH command directly (in case of key-less access) or if we are executing upon
+# request from the .ssh/authorized_keys option forcing the executio of a modified
+# command.
+if [ -z "$SSH_ORIGINAL_COMMAND" ] 
+then
+  # This is an execution triggered by a direct call to this script (which may happen
+  # via SSH), We just strip away the 0-argument, which is the name of this script.
+  command="$1"
+else
+  # This is an execution forced by the configuration at .ssh/authorized_keys
+  command=$(echo $SSH_ORIGINAL_COMMAND | cut -d' ' -f 1)
+  arg=$(echo $SSH_ORIGINAL_COMMAND | cut -d' ' -f 2)
 fi
 
+# Analyze the single command, and decide if it is allowed or not
 if [[ $command == "scp" ]] ; then
   if [[ $arg == "-t" ]] || [[ $arg == "-f" ]] ; then
     if [ "$writeLog" = true ] ; then
