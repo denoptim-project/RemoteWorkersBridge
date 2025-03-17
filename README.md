@@ -1,10 +1,15 @@
 # Submit Jobs To Remote Workers
 This is a simple interface that creates a bridge between a local client and one or more remote clients (i.e., the "workers"), and uses such bridge to send computational tasks (i.e., jobs) to those remote clients, a.k.a. workers. The workers are typically high-performance computing (HPC) clusters where jobs can be submitted to a scheduler or a queuing system.
 
-The nature of the scheduler/queue is not influencing the present repository because the purpose of this repository is to collect tools and documentation that allows to configure a secure connection, transfer files from/to a local client to/from the remote worker, send jobs to the remote worker, wait for completion of the job, and retrieve the results.
+The nature of the scheduler/queue is not influencing the present repository because the purpose of this repository is to collect tools and documentation that allows to configure a connection that reflect the security policies of different HPC centers, transfer files from/to a local client to/from the remote worker, send jobs to the remote worker, wait for completion of the job, and retrieve the results.
 Still, we here ***assume the existence of commands to submit jobs to the queue*** (see submission commands in the **runners** scripts you find under the [runners](runners) folder). Custom job submission commands can be easily integrated by adding the corresponding script in the [runners](runners) folder, and by adding another case of permitted command in the [commandFilter.sh](commandFilter.sh).
 
-## How to setup a "sub-to-remote bridge"
+# Strategies for setting up a bridge to remote workers
+We here support two strategies for configuring the connection:
+a. [Strategy based on configuring SSH key](#via_SSH_key_and_identity_file) and using the identify file to perform operations via SSH.
+b. [Strategy based on creating a single main background connection (posibly with 2FA)](#via_main_background_connection) that is then used by all further connections to the remote.
+
+## Via SSH key and identity file
 1. Clone/copy the repository to your local client.
 2. Clone/copy the repository to each HPC worker you want to submit to.
 3. On each HPC worker set the permission mask on the command filter. Use the following command, but replace the string `path_to_your_copy_of_this_repository_on_the_HPC_worker` with the path that: applies to your specific file system:
@@ -35,7 +40,7 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     ```
     where `your_IP` is the IP address of your local client (the machine what will use this connection to submit jobs to the worker. Presently we support only IPv4. You can get the proper IP by running `echo $(curl -s -4 ifconfig.me/ip)` frm within your local client) and `path_to_your_copy_of_this_repository_on_the_HPC_worker` is the path to the RemoteWorkersBridge folder on the HPC worker: the same you have used above.
 
-7. Specify the configurations controlling the functionality of the bridge between the local client and the HPC workers. This is done by creating a `configuration` file. These details ***MUST*** be specified in a file named `configuration`. Your `configuration` file must be place beside the [configuration.example](configuration.example) file, i.e., in your local copies of this repository both on the local client and on the remote HPC worker (the repositories you have clone in steps 1. and 2.). The settings of the repository (i.e., the `.gitignore` file) are so that the `configuration` file is not tracked by git.
+7. Specify the configurations controlling the functionality of the bridge between the local client and the HPC workers. This is done by creating a `configuration` file. These details ***MUST*** be specified in a file named `configuration`. Your `configuration` file must be place beside the [configuration.example](configuration.example) file, i.e., in your local copies of this repository both on the local client and on the remote HPC worker (the repositories you have cloned in steps 1. and 2.). The settings of the repository (i.e., the `.gitignore` file) are so that the `configuration` file is not tracked by git.
     An example of such file is available in [configuration.example](configuration.example). The configuration needed to use these scripts includes:
 
     * `remoteIP` is the identity of the HPC worker in the network</li>
@@ -53,7 +58,54 @@ Still, we here ***assume the existence of commands to submit jobs to the queue**
     ```
     After some seconds the result should be a comforting message saying that the test was successfully passed. Now you are ready to use the bridge to send calculations to the remote worker.
 
+
+## Via main background connection
+1. Clone/copy the repository to your local client.
+2. Clone/copy the repository to each HPC workers you want to submit to.
+3. On each HPC worker set the permission mask on the command filter. Use the following command, but replace the string `path_to_your_copy_of_this_repository_on_the_HPC_worker` with the path that: applies to your specific file system:
+    ```
+    cd path_to_your_copy_of_this_repository_on_the_HPC_worker/RemoteWorkersBridge
+    chmod 700 commandFilter.sh
+    ```
+4. Configure the connectio from your local client to the remote HPC workers. Open or create the `.ssh/config` file and add the following lines adjusted with your actual values (and ,yes, we do mean to write twice the IP instead of the hostname!):
+    ```
+    Host <IP_of_remote>
+        Hostname <IP_of_remote>
+        User <username>
+        ControlMaster auto
+        ControlPath ~/.ssh/%r@%h:%p
+    ```
+5. Start a long -asting terminal session, possibly with something like [tmux](https://github.com/tmux/tmux/wiki)(preferred!) so that you can keep this session alive in the background, or remember to not close this terminal (discouraged!)
+6. In the long-lasting terminal session create a ssh connection:
+    ```
+    ssh -CX -o ServerAliveInterval=30 -fN <IP_of_remote>
+    ```
+    You should test that this connection is active, by running `ssh <IP_of_remote>` and veryfying that you are NOT prompted to type any password.
+7. Specify the configurations controlling the functionality of the bridge between the local client and the HPC workers. This is done by creating a `configuration` file. These details ***MUST*** be specified in a file named `configuration`. Your `configuration` file must be place beside the [configuration.example](configuration.example) file, i.e., in your local copies of this repository both on the local client and on the remote HPC worker (the repositories you have cloned in steps 1. and 2.). The settings of the repository (i.e., the `.gitignore` file) are so that the `configuration` file is not tracked by git.
+    An example of such file is available in [configuration.example](configuration.example). The configuration needed to use these scripts includes:
+
+    * `remoteIP` is the identity of the HPC worker in the network</li>
+    * `wdirOnRemote` a pathname defining the work directory on the HPC worker. Your remote client will send any files defining a job (e.g., input files) on this location of the HPC worker, and from there the HPC worker will take any such files for any further processing, e.g., for submit a job defined by those input files.
+    * `userOnRemote` your used name on the HPC worker. This is used to send files and requests to the HPC worker via `scp`.
+    * `cmdfilter` the absolute pathname of the [commandFilter.sh](commandFilter.sh) file ***on the remote HPC***. This is used on the local client to build commands to be sent via ssh and to be interpreted by the [commandFilter.sh](commandFilter.sh) on the remote HPC.
+    * `workKind` defined what kind of work a specific worker is able to do. This allows to register multiple HPC workers and use each of them for specific tasks that are best suited for their architecture.
+  
+8.  Copy the `configuration` file from your local client to each of the HPC workers. It must be place beside the [configuration.example](configuration.example) file present in the copy of this repository on each HPC worker (the repositories you have clone in step 2.).
+    ´´´
+    scp configuration <IP_of_remote>:<wdirOnRemote>
+    ´´´
+
+10. Done! You should now be ready to use the bridge to the remote HPC workers. This is how to quickly run a test:
+    ```
+    cd submit_tool/test/
+    ./runTest.sh
+    ```
+    After some seconds the result should be a comforting message saying that the test was successfully passed. Now you are ready to use the bridge to send calculations to the remote worker.
+
+    
+
 # Testing without remote workers
+***Compatible only with the SSH-key strategy***
 If you do not want to use an actual remote worker for testing this code, you can use your local client (i.e., `localhost`) as a fake remote worker. See [submit_tool/test/runTest_on_localhost.sh](submit_tool/test/runTest_on_localhost.sh) or run the test by:
 ```
 cd submit_tool/test
