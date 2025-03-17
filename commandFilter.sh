@@ -60,6 +60,13 @@ fi
 # Analyze the single command, and decide if it is allowed or not
 command=$(echo $SSH_ORIGINAL_COMMAND | cut -d' ' -f 1)
 arg=$(echo $SSH_ORIGINAL_COMMAND | cut -d' ' -f 2)
+
+# Intercept attempts to call this script from ssh command
+if [[ "$SSH_ORIGINAL_COMMAND" =~ "^$0 .*" ]] ; then
+  echo "$ts authorized ssh-triggering of commanf filter: $SSH_ORIGINAL_COMMAND" >> $log
+  command="$arg"
+fi
+
 if [[ $command == "scp" ]] ; then
   if [[ $arg == "-t" ]] || [[ $arg == "-f" ]] ; then
     if [ "$writeLog" = true ] ; then
