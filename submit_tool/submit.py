@@ -191,7 +191,7 @@ parser.add_option("-x", "--max", dest="maxwait",
 
 keyfile = defKey
 cmdfilter = defFilter
-if options.keyfile:
+if options.keyfile and options.keyfile.upper() != "NONE":
     keyfile = options.keyfile
 if options.pathToFilter:
     cmdfilter = options.pathToFilter
@@ -248,7 +248,7 @@ def build_ssh_command(user,
         array = ['ssh', '-i', identity_file, '%s@%s' % (user, host), cmd]
     else:
         array = ['ssh', '%s@%s' % (user, host), cmd]
-    print('Command: ',array)
+    #print('Command: ',array)
     return array
 
 
@@ -259,7 +259,7 @@ def build_scp_command(source,
         array = ['scp', '-i', identity_file, source, destination]
     else:
         array = ['scp', source, destination]
-    print('Command: ',array)
+    #print('Command: ',array)
     return array
 
 
