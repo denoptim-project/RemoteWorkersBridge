@@ -40,7 +40,7 @@ jobSubmissionCommand="submit_job_acc"
 #parameters for actual runs
 nodes="1"
 cores="20"
-walltime="20"
+walltime="47"
 
 #prepare master job script
 cat<<EOF>"$jobscript"
