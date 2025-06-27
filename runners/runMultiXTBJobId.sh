@@ -39,7 +39,7 @@ jobSubmissionCommand="submit_job_acc"
 #parameters for actual runs
 nodes="1"
 cores="32"
-walltime="6"
+walltime="12"
 
 #prepare master job script
 cat<<EOF>"$jobscript"
@@ -70,14 +70,12 @@ molName="\$(echo \$sdfFile  | awk -F '_' '{print \$1}')"
 echo "Working with molecule \$molNum" >> "\$logFile"
 echo "Task is completed once '\${tclFile}' is created. " >> "\$logFile"
 
-jdFile="\$(ls *.jd)"
+jdFile="\$(ls *.jd.json)"
+inpFiles=\$(ls *XTB.xyz *XTB.sdf | grep -v / | paste -sd ',')
 
 #
 # Submit Task
 #
-inpSDFs=\$(ls *XTB.sdf | grep -v / | tr '\n' ',')
-inpXYZs=\$(ls *XTB.xyz | grep -v / | tr '\n' ',')
-
 
 echo "$jobSubmissionCommand" -f "\$inpSDFs,\$inpXYZs" -j "\$jdFile" --tcl "\$tclFile" --tclREGEX ".*last-xTB.sdf" -c "$cores" -t "$walltime" --jobname "\${molName}_XTB" --accargs "--StringFromCLI \$molName" --notify NONE >> "\$logFile" 2>&1
 "$jobSubmissionCommand" -f "\$inpSDFs,\$inpXYZs" -j "\$jdFile" --tcl "\$tclFile" --tclREGEX ".*last-xTB.sdf" -c "$cores" -t "$walltime" --jobname "\${molName}_XTB" --accargs "--StringFromCLI \$molName" --notify NONE  >> "\$logFile" 2>&1
